@@ -14,6 +14,7 @@ const subTitleBtn = document.getElementById("subTitle");
 
 const speedBar = document.getElementById("speed-bar");
 const progressBar = document.getElementById("progress-bar");
+const previewImage = document.getElementById('previewImage');
 const volumeBar = document.getElementById("volume-bar");
 
 const mediaTime = document.getElementById("media-time");
@@ -302,3 +303,30 @@ function parseTime(timeString) {
   const [h, m, s] = hms.split(":").map(Number);
   return h * 3600 + m * 60 + s + (ms ? Number("0." + ms) : 0);
 }
+
+const thumbnailInterval = 10; // چند ثانیه یک بار فریم برداری شده
+progressBar.addEventListener("mousemove", function (e) {
+  previewImage.style.display = "block";
+  const rect = progressBar.getBoundingClientRect();
+  const position = (e.clientX - rect.left) / rect.width; // نسبت موقعیت ماوس (۰ تا ۱)
+  const videoDuration = media.duration; // طول ویدیو
+  const currentTime = position * videoDuration; // زمان فعلی بر اساس موقعیت ماوس
+
+  // پیدا کردن نزدیک‌ترین تصویر پیش‌نمایش
+  const thumbnailIndex = Math.floor(currentTime / thumbnailInterval) + 1;
+  const thumbnailFile = `images/output_${thumbnailIndex}.jpg`;
+  // تنظیم تصویر پیش‌نمایش
+  previewImage.src = thumbnailFile;
+  previewImage.style.display = 'block';
+
+  // تنظیم موقعیت تصویر پیش‌نمایش
+  const previewWidth = previewImage.offsetWidth;
+  let left = e.clientX - rect.left - previewWidth / 2; // وسط تصویر روی ماوس
+  // جلوگیری از خروج تصویر از کادر
+  left = Math.max(0, Math.min(left, rect.width - previewWidth));
+  previewImage.style.left = `${left}px`;
+});
+progressBar.addEventListener('mouseout', () => {
+  // مخفی کردن تصویر وقتی ماوس خارج می‌شود
+  previewImage.style.display = 'none';
+});
